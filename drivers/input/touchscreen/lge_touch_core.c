@@ -3936,13 +3936,13 @@ static void touch_early_suspend(struct early_suspend *h)
 			container_of(h, struct lge_touch_data, early_suspend);
 #ifdef CONFIG_TOUCHSCREEN_PREVENT_SLEEP
 #if defined(CONFIG_TOUCHSCREEN_SWEEP2WAKE) || defined(CONFIG_TOUCHSCREEN_DOUBLETAP2WAKE)
-	bool prevent_sleep = false;
+        bool prevent_sleep = false;
 #endif
 #if defined(CONFIG_TOUCHSCREEN_SWEEP2WAKE)
-	prevent_sleep = (s2w_switch > 0) && (s2w_s2sonly == 0);
+        prevent_sleep = (s2w_switch > 0) && (s2w_s2sonly == 0);
 #endif
 #if defined(CONFIG_TOUCHSCREEN_DOUBLETAP2WAKE)
-	prevent_sleep = prevent_sleep || (dt2w_switch > 0);
+        prevent_sleep = prevent_sleep || (dt2w_switch > 0);
 #endif
 #endif
 
@@ -3954,36 +3954,37 @@ static void touch_early_suspend(struct early_suspend *h)
 		return;
 	}
 
+#ifdef CUST_G_TOUCH
+	if (ts->pdata->role->ghost_detection_enable) {
+		resume_flag = 0;
+	}
+#endif
+
+#ifdef CUST_G_TOUCH
+	if (ts->pdata->role->ghost_detection_enable) {
+		hrtimer_cancel(&hr_touch_trigger_timer);
+	}
+#endif
+
 #ifdef CONFIG_TOUCHSCREEN_PREVENT_SLEEP
-	if (prevent_sleep) {
-		enable_irq_wake(ts->client->irq);
+        if (prevent_sleep) {
+                enable_irq_wake(ts->client->irq);
 		release_all_ts_event(ts);
 	} else
 #endif
 	{
-#ifdef CUST_G_TOUCH
-		if (ts->pdata->role->ghost_detection_enable) {
-			resume_flag = 0;
-		}
-#endif
-
 		if (ts->pdata->role->operation_mode)
 			disable_irq(ts->client->irq);
 		else
 			hrtimer_cancel(&ts->timer);
-#ifdef CUST_G_TOUCH
-		if (ts->pdata->role->ghost_detection_enable) {
-			hrtimer_cancel(&hr_touch_trigger_timer);
-		}
-#endif
-	
+
 		cancel_work_sync(&ts->work);
 		cancel_delayed_work_sync(&ts->work_init);
 		if (ts->pdata->role->key_type == TOUCH_HARD_KEY)
 			cancel_delayed_work_sync(&ts->work_touch_lock);
-		
+
 		release_all_ts_event(ts);
-		
+
 		touch_power_cntl(ts, ts->pdata->role->suspend_pwr);
 	}
 }
@@ -3994,13 +3995,13 @@ static void touch_late_resume(struct early_suspend *h)
 			container_of(h, struct lge_touch_data, early_suspend);
 #ifdef CONFIG_TOUCHSCREEN_PREVENT_SLEEP
 #if defined(CONFIG_TOUCHSCREEN_SWEEP2WAKE) || defined(CONFIG_TOUCHSCREEN_DOUBLETAP2WAKE)
-	bool prevent_sleep = false;
+        bool prevent_sleep = false;
 #endif
 #if defined(CONFIG_TOUCHSCREEN_SWEEP2WAKE)
-	prevent_sleep = (s2w_switch > 0) && (s2w_s2sonly == 0);
+        prevent_sleep = (s2w_switch > 0) && (s2w_s2sonly == 0);
 #endif
 #if defined(CONFIG_TOUCHSCREEN_DOUBLETAP2WAKE)
-	prevent_sleep = prevent_sleep || (dt2w_switch > 0);
+        prevent_sleep = prevent_sleep || (dt2w_switch > 0);
 #endif
 #endif
 
@@ -4012,19 +4013,20 @@ static void touch_late_resume(struct early_suspend *h)
 		return;
 	}
 
+#ifdef CUST_G_TOUCH
+	if (ts->pdata->role->ghost_detection_enable) {
+		resume_flag = 1;
+		ts_rebase_count = 0;
+	}
+#endif
+
 #ifdef CONFIG_TOUCHSCREEN_PREVENT_SLEEP
-	if (prevent_sleep)
-		disable_irq_wake(ts->client->irq);
+        if (prevent_sleep)
+                disable_irq_wake(ts->client->irq);
 	else
 #endif
 	{
 		touch_power_cntl(ts, ts->pdata->role->resume_pwr);
-#ifdef CUST_G_TOUCH
-		if (ts->pdata->role->ghost_detection_enable) {
-			resume_flag = 1;
-			ts_rebase_count = 0;
-		}
-#endif
 
 		if (ts->pdata->role->operation_mode)
 			enable_irq(ts->client->irq);
@@ -4033,7 +4035,7 @@ static void touch_late_resume(struct early_suspend *h)
 
 		if (ts->pdata->role->resume_pwr == POWER_ON)
 			queue_delayed_work(touch_wq, &ts->work_init,
-					msecs_to_jiffies(ts->pdata->role->booting_delay));
+				msecs_to_jiffies(ts->pdata->role->booting_delay));
 		else
 			queue_delayed_work(touch_wq, &ts->work_init, 0);
 	}
