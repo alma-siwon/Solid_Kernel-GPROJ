@@ -3960,6 +3960,12 @@ static void touch_early_suspend(struct early_suspend *h)
 	}
 #endif
 
+#ifdef CUST_G_TOUCH
+	if (ts->pdata->role->ghost_detection_enable) {
+		hrtimer_cancel(&hr_touch_trigger_timer);
+	}
+#endif
+
 #ifdef CONFIG_TOUCHSCREEN_PREVENT_SLEEP
 	if (prevent_sleep) {
 		enable_irq_wake(ts->client->irq);
@@ -3973,11 +3979,6 @@ static void touch_early_suspend(struct early_suspend *h)
 			disable_irq(ts->client->irq);
 		else
 			hrtimer_cancel(&ts->timer);
-#ifdef CUST_G_TOUCH
-		if (ts->pdata->role->ghost_detection_enable) {
-			hrtimer_cancel(&hr_touch_trigger_timer);
-		}
-#endif
 
 		cancel_work_sync(&ts->work);
 		cancel_delayed_work_sync(&ts->work_init);
@@ -4012,6 +4013,13 @@ static void touch_late_resume(struct early_suspend *h)
 		return;
 	}
 
+#ifdef CUST_G_TOUCH
+	if (ts->pdata->role->ghost_detection_enable) {
+		resume_flag = 1;
+		ts_rebase_count = 0;
+	}
+#endif
+
 #ifdef CONFIG_TOUCHSCREEN_PREVENT_SLEEP
 	if (prevent_sleep) {
 		disable_irq_wake(ts->client->irq);
@@ -4019,13 +4027,6 @@ static void touch_late_resume(struct early_suspend *h)
 	} else
 #endif
 	{
-#ifdef CUST_G_TOUCH
-		if (ts->pdata->role->ghost_detection_enable) {
-			resume_flag = 1;
-			ts_rebase_count = 0;
-		}
-#endif
-
 		if (ts->pdata->role->operation_mode)
 			enable_irq(ts->client->irq);
 		else
