@@ -49,6 +49,7 @@ modules.builtin
 /makeboot.sh
 /modules.sh
 /patch
+/makeboot2.sh
 
 #
 # Debian directory (make deb-pkg)
