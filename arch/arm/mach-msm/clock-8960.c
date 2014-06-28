@@ -3518,7 +3518,7 @@ static struct clk_freq_tbl clk_tbl_gfx3d[] = {
 	F_GFX3D(200000000, pll2,  1,  4),
 	F_GFX3D(228571000, pll2,  2,  7),
 	F_GFX3D(266667000, pll2,  1,  3),
-	F_GFX3D(325000000, pll2,  2,  5),
+	F_GFX3D(320000000, pll2,  2,  5),
 	F_GFX3D(400000000, pll2,  1,  2),
 	F_GFX3D(450000000, pll15, 1,  2),
 	F_END
@@ -6631,16 +6631,16 @@ static void __init reg_init(void)
 			writel_relaxed(0x2B, PRNG_CLK_NS_REG);
 	}
 
-	if (cpu_is_apq8064()) {
+	//if (cpu_is_apq8064()) {
 		/* Program PLL15 to 975MHz with ref clk = 27MHz */
-		configure_sr_pll(&pll15_config, &pll15_regs, 0);
-	} else if (cpu_is_apq8064ab()) {
+	//	configure_sr_pll(&pll15_config, &pll15_regs, 0);
+	//} else if (cpu_is_apq8064ab()) {
 		/* Program PLL15 to 900MHZ */
 		pll15_config.l = 0x21 | BVAL(31, 7, 0x620);
 		pll15_config.m = 0x1;
 		pll15_config.n = 0x3;
 		configure_sr_pll(&pll15_config, &pll15_regs, 0);
-	}
+	//}
 
 	/*
 	 * Program PLL15 to 900MHz with ref clk = 27MHz and
