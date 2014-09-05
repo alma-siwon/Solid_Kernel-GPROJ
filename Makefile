@@ -1,6 +1,6 @@
 VERSION = 3
 PATCHLEVEL = 4
-SUBLEVEL = 0
+SUBLEVEL = 10
 EXTRAVERSION =
 NAME = Saber-toothed Squirrel
 
@@ -333,7 +333,7 @@ include $(srctree)/scripts/Kbuild.include
 
 AS		= $(CROSS_COMPILE)as
 LD		= $(CROSS_COMPILE)ld
-CC		= $(CROSS_COMPILE)gcc
+REAL_CC		= $(CROSS_COMPILE)gcc
 CPP		= $(CC) -E
 # Check to see if the kernel is being built inline with saber host toolchains for graphite flags for CC/CPP
 # This get's passed to the host since we use $(CROSS_COMPILE)gcc
@@ -356,6 +356,10 @@ KALLSYMS	= scripts/kallsyms
 PERL		= perl
 CHECK		= sparse
 
+# Use the wrapper for the compiler. This wrapper scans for new
+# warnings and causes the build to stop upon encountering them.
+CC = $(srctree)/scripts/gcc-wrapper.py $(REAL_CC)
+
 CHECKFLAGS     := -D__linux__ -Dlinux -D__STDC__ -Dunix -D__unix__ \
 		  -Wbitwise -Wno-return-void $(CF)
 
@@ -373,8 +377,7 @@ CFLAGS_KERNEL   = -mfpu=neon-vfpv4 \
                   -mtune=cortex-a15 \
                   -O2 \
                   -fgcse-las \
-                  -fpredictive-commoning \
-		  -Wno-error=implicit-function-declaration
+                  -fpredictive-commoning
 ifeq ($(ENABLE_GRAPHITE),true)
 CFLAGS_KERNEL	+= -fgraphite -floop-flatten -floop-parallelize-all -ftree-loop-linear -floop-interchange -floop-strip-mine -floop-block
 endif
@@ -382,8 +385,7 @@ AFLAGS_KERNEL	= -mfpu=neon-vfpv4 \
                   -mtune=cortex-a15 \
                   -O2 \
                   -fgcse-las \
-                  -fpredictive-commoning \
-		  -Wno-error=implicit-function-declaration
+                  -fpredictive-commoning
 ifeq ($(ENABLE_GRAPHITE),true)
 AFLAGS_KERNEL	+= -fgraphite -floop-flatten -floop-parallelize-all -ftree-loop-linear -floop-interchange -floop-strip-mine -floop-block
 endif
@@ -404,6 +406,8 @@ KBUILD_CFLAGS   := -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs \
 		   -Werror-implicit-function-declaration \
 		   -Wno-format-security \
 		   -Wno-sizeof-pointer-memaccess \
+		   -Wno-maybe-uninitialized \
+		   -Wno-array-bounds \
 		   -mno-unaligned-access \
 		   -fno-delete-null-pointer-checks \
 		   -pipe
@@ -606,10 +610,6 @@ endif
 endif
 
 include $(srctree)/arch/$(SRCARCH)/Makefile
-
-ifneq ($(CONFIG_FRAME_WARN),0)
-KBUILD_CFLAGS += $(call cc-option,-Wframe-larger-than=${CONFIG_FRAME_WARN})
-endif
 
 # Force gcc to behave correct even for buggy distributions
 ifndef CONFIG_CC_STACKPROTECTOR

@@ -851,6 +851,10 @@ static int compact_zone(struct zone *zone, struct compact_control *cc)
 				ret = COMPACT_PARTIAL;
 				goto out;
 			}
+			if (err == -ENOMEM) {
+				ret = COMPACT_PARTIAL;
+				goto out;
+			}
 		}
 
 		/* Capture a page now if it is a suitable size */
