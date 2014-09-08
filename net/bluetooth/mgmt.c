@@ -578,6 +578,7 @@ static int set_discoverable(struct sock *sk, u16 index, unsigned char *data,
 		scan |= SCAN_INQUIRY;
 
 	err = hci_send_cmd(hdev, HCI_OP_WRITE_SCAN_ENABLE, 1, &scan);
+
 	if (err < 0)
 		mgmt_pending_remove(cmd);
 
@@ -638,6 +639,7 @@ static int set_connectable(struct sock *sk, u16 index, unsigned char *data,
 		scan = 0;
 
 	err = hci_send_cmd(hdev, HCI_OP_WRITE_SCAN_ENABLE, 1, &scan);
+
 	if (err < 0)
 		mgmt_pending_remove(cmd);
 
